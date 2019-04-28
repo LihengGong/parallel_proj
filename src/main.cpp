@@ -1,0 +1,74 @@
+// C++ include
+#include <iostream>
+#include <string>
+#include <vector>
+#include <cmath>
+#include <sys/resource.h>
+#include <Eigen/Dense>
+#include <time.h>
+
+// Image writing library
+#define STB_IMAGE_WRITE_IMPLEMENTATION // Do not include this line twice in your project!
+#include "stb_image_write.h"
+#include "utils.h"
+#include "shape.h"
+//#include <tbb/task_scheduler_init.h>
+
+// Shortcut to avoid Eigen:: and std:: everywhere, DO NOT USE IN .h
+using namespace std;
+using namespace Eigen;
+
+vector<Shape*> shape_vectors;
+
+
+void extend_stack() {
+    const rlim_t kStackSize = 16 * 1024 * 1024;   // min stack size = 16 MB
+    struct rlimit rl;
+    int result;
+
+    result = getrlimit(RLIMIT_STACK, &rl);
+    if (result == 0)
+    {
+        if (rl.rlim_cur < kStackSize)
+        {
+            rl.rlim_cur = kStackSize;
+            result = setrlimit(RLIMIT_STACK, &rl);
+            if (result != 0)
+            {
+                fprintf(stderr, "setrlimit returned result = %d\n", result);
+            }
+        }
+    } else {
+        fprintf(stderr, "getrlimit returned result = %d\n", result);
+    }
+}
+
+
+int main()
+{
+    clock_t tStart = clock();
+    // The default stack limit is 8M; extend it to 16M just in case.
+    extend_stack();
+
+    string filename("../data/bumpy_cube.off");
+    string filename2("../data/bunny.off");
+
+    Mesh *m = new Mesh(filename, LAMBERTIAN_SHADING, COLOR_GREEN);
+    shape_vectors.push_back(m);
+
+    Mesh *m2 = new Mesh(filename2, LAMBERTIAN_SHADING, COLOR_GOLD);
+    shape_vectors.push_back(m2);
+
+    compute_scene();
+
+    for (vector<Shape*>::iterator it = shape_vectors.begin();
+              it != shape_vectors.end(); ++it) {
+      delete *it;
+    }
+
+    cout << "program execution time: "
+         << ((double)(clock() - tStart)/CLOCKS_PER_SEC)
+         << "s."<< endl;
+
+    return 0;
+}
