@@ -146,6 +146,7 @@ void compute_scene() {
  
 
   // version 0
+  
   // hardcore openmp
   #pragma omp parallel for schedule(static)
   for (unsigned i = 0; i < Shape::x_len; i++)
