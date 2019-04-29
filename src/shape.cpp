@@ -36,7 +36,7 @@ double color_matrix[][3] = {
 
 // Camera scene related data members.
 // These members are common to all shapes.
-const unsigned PIXELS = 1200;
+const unsigned PIXELS = 400;
 long Shape::x_len = PIXELS;
 long Shape::y_len = PIXELS;
 MatrixXd Shape::C_R_mat = MatrixXd::Zero(Shape::x_len, Shape::y_len);
@@ -142,49 +142,68 @@ void compute_scene() {
   Shape::closest_pixel_in_ray = std::numeric_limits<double>::infinity();
   double displacement = Shape::scene_width / PIC_NUM;
 
-    for (unsigned i = 0; i < Shape::x_len; i++) {
-      if(i % (Shape::x_len / 100 != 0 ? Shape::x_len / 100: 1) == 0) {
-              cout << "percentage: " << ((double)i / Shape::x_len) * 100 << endl;
+// version 2
+ 
+
+  // version 0
+  // hardcore openmp
+  #pragma omp parallel for schedule(static)
+  for (unsigned i = 0; i < Shape::x_len; i++)
+  {
+    /*** omp id ****/
+    int threadid = omp_get_thread_num();
+    if(threadid == 0 && i == 0){
+      cout << "num of thread " << omp_get_num_threads() << endl;
+    }
+    // if(threadid == 0 && i % (Shape::x_len / 100 != 0 ? Shape::x_len / 100: 1) == 0) {
+    //   cout << "percentage: " << ((double)i / Shape::x_len) * 100 << endl;
+    // }
+
+    // if (i % (Shape::x_len / 100 != 0 ? Shape::x_len / 100 : 1) == 0)
+    // {
+    //   cout << "percentage: " << ((double)i / Shape::x_len) * 100 << endl;
+    // }
+
+    for (unsigned j = 0; j < Shape::y_len; j++)
+    {
+      bool is_shading = false;
+      Shape::generate_camera_rays(i, j);
+
+      Shape::light_position << -4.0 + displacement, 10.0, 4.0;
+      Configuration config = compute_raycolor(Shape::scene_ray_origin,
+                                              Shape::scene_ray_direction, 0);
+
+      ///// This code is ugly. I hate it.
+      switch (config.color_enum)
+      {
+      case COLOR_RED:
+        Shape::C_R_mat(i, j) = config.col_value;
+        break;
+      case COLOR_GREEN:
+        Shape::C_G_mat(i, j) = config.col_value;
+        break;
+      case COLOR_BLUE:
+        Shape::C_B_mat(i, j) = config.col_value;
+        break;
+      case COLOR_GOLD:
+        Shape::C_R_mat(i, j) = config.col_value;
+        Shape::C_G_mat(i, j) = config.col_value * 0.8431;
+        //Shape::C_B_mat(i, j) = config.col_value;
+        break;
+      case COLOR_NYU:
+        Shape::C_R_mat(i, j) = config.col_value * (87.0 / 255.0);
+        Shape::C_G_mat(i, j) = config.col_value * (6.0 / 255.0);
+        Shape::C_B_mat(i, j) = config.col_value * (140.0 / 255.0);
+        break;
+      case COLOR_GREY:
+        Shape::C_R_mat(i, j) = config.col_value;
+        Shape::C_G_mat(i, j) = config.col_value;
+        Shape::C_B_mat(i, j) = config.col_value;
+        break;
+      default:
+        break;
       }
-
-      for (unsigned j = 0; j < Shape::y_len; j++) {
-        bool is_shading = false;
-        Shape::generate_camera_rays(i, j);
-
-        Shape::light_position << -4.0 + displacement, 10.0, 4.0;
-        Configuration config = compute_raycolor(Shape::scene_ray_origin,
-                                        Shape::scene_ray_direction, 0);
-
-        ///// This code is ugly. I hate it.
-        switch (config.color_enum) {
-          case COLOR_RED:
-            Shape::C_R_mat(i, j) = config.col_value;
-            break;
-          case COLOR_GREEN:
-            Shape::C_G_mat(i, j) = config.col_value;
-            break;
-          case COLOR_BLUE:
-            Shape::C_B_mat(i, j) = config.col_value;
-            break;
-          case COLOR_GOLD:
-            Shape::C_R_mat(i, j) = config.col_value;
-            Shape::C_G_mat(i, j) = config.col_value * 0.8431;
-            //Shape::C_B_mat(i, j) = config.col_value;
-            break;
-          case COLOR_NYU:
-            Shape::C_R_mat(i, j) = config.col_value * (87.0/255.0);
-            Shape::C_G_mat(i, j) = config.col_value * (6.0/255.0);
-            Shape::C_B_mat(i, j) = config.col_value * (140.0/255.0);
-            break;
-          case COLOR_GREY:
-            Shape::C_R_mat(i, j) = config.col_value;
-            Shape::C_G_mat(i, j) = config.col_value;
-            Shape::C_B_mat(i, j) = config.col_value;
-            break;
-          default:
-            break;
-        }
-      }
+    }
     std::string filename = "filename" + std::to_string(0) + ".png";
     write_matrix_to_png(Shape::C_R_mat, Shape::C_G_mat,
                         Shape::C_B_mat, Shape::A_mat,

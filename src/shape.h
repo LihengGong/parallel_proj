@@ -7,6 +7,7 @@
 // #define CG_MIRROR_REFLECTION
 
 #include <vector>
+#include <omp.h>
 
 #ifdef CG_USE_TBB
 //tbb
@@ -202,7 +203,7 @@ public:
            double& solution_t,
            Eigen::Ref<Eigen::Vector3d> unit_norm) override {
 
-    Eigen::Vector3d intersection(0., 0., 0.);
+    // Eigen::Vector3d intersection(0., 0., 0.);
     bool is_intersect= false;
     bool is_shading = false;
     double temp_solution = std::numeric_limits<double>::infinity();
@@ -211,6 +212,10 @@ public:
     p_vec = point_vec;
     dir = direction;
 
+    // hardcore openmp
+  // #pragma omp parallel for num_threads(8) schedule(static)
+
+  /*
     for (unsigned int ind = 0; ind < tri_number; ind++) {
       Eigen::Vector3i cur_triangle_vertices = triangles_matrix.row(ind);
       Eigen::Vector3d vertice0 = vertices_matrix.row(cur_triangle_vertices(0));
@@ -233,6 +238,48 @@ public:
         is_shading = true;
       }
     }
+ //   */
+
+// version 1
+// #pragma omp parallel for num_threads(8) schedule(static)
+
+// version 2
+
+///*
+// #pragma omp parallel
+// #pragma omp for schedule(static)
+    for (size_t ind = 0; ind < tri_number; ind++)
+    {
+      //////do the job.
+      Eigen::Vector3i cur_triangle_vertices = triangles_matrix.row(ind);
+      Eigen::Vector3d vertice0 = vertices_matrix.row(cur_triangle_vertices(0));
+      Eigen::Vector3d vertice1 = vertices_matrix.row(cur_triangle_vertices(1));
+      Eigen::Vector3d vertice2 = vertices_matrix.row(cur_triangle_vertices(2));
+
+      double cur_solution = std::numeric_limits<double>::infinity();
+      Eigen::Vector3d intersection(0., 0., 0.);
+
+      bool is_intersect = MolerTrumbore(p_vec,
+                                        dir,
+                                        vertice0, vertice1, vertice2,
+                                        intersection, cur_solution);
+      is_intersection_arry[ind] = is_intersect;
+      solution_array[ind] = cur_solution;
+    }
+
+// 
+    for (unsigned int ind = 0; ind < tri_number; ind++)
+    {
+      if (is_intersection_arry[ind] &&
+          solution_array[ind] < temp_solution)
+      {
+        temp_solution = solution_array[ind];
+        final_index = ind;
+        is_shading = true;
+      }
+    }
+
+// */
 
     if (is_shading) {
       Eigen::Vector3i cur_triangle_vertices = triangles_matrix.row(final_index);

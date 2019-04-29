@@ -19,6 +19,7 @@ using namespace std;
 using namespace Eigen;
 
 vector<Shape*> shape_vectors;
+int num_thread;
 
 
 void extend_stack() {
@@ -43,21 +44,32 @@ void extend_stack() {
     }
 }
 
-
-int main()
+int main(int argc, char *argv[])
 {
-    clock_t tStart = clock();
+    // clock_t tStart = clock();
     // The default stack limit is 8M; extend it to 16M just in case.
     extend_stack();
 
-    string filename("../data/bumpy_cube.off");
-    string filename2("../data/bunny.off");
+    if (argc != 2)
+    {
+        // std::cout << "Error: not enough input argument" << std::endl;
+        printf("Error: not enough input argument");
+        exit(1);
+    }
+
+    num_thread = atoi(argv[1]);
+    omp_set_num_threads(num_thread);
+
+    string filename("../data/cube.off");
+    // string filename2("../data/bunny.off");
+
+
 
     Mesh *m = new Mesh(filename, LAMBERTIAN_SHADING, COLOR_GREEN);
     shape_vectors.push_back(m);
 
-    Mesh *m2 = new Mesh(filename2, LAMBERTIAN_SHADING, COLOR_GOLD);
-    shape_vectors.push_back(m2);
+    // Mesh *m2 = new Mesh(filename2, LAMBERTIAN_SHADING, COLOR_GOLD);
+    // shape_vectors.push_back(m2);
 
     compute_scene();
 
@@ -66,9 +78,9 @@ int main()
       delete *it;
     }
 
-    cout << "program execution time: "
-         << ((double)(clock() - tStart)/CLOCKS_PER_SEC)
-         << "s."<< endl;
+    // cout << "program execution time: "
+    //      << ((double)(clock() - tStart)/CLOCKS_PER_SEC)
+    //      << "s."<< endl;
 
     return 0;
 }
