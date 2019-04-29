@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 
 
 
-    Mesh *m = new Mesh(filename, LAMBERTIAN_SHADING, COLOR_GREEN);
+    Mesh *m = new Mesh(filename, LAMBERTIAN_SHADING, COLOR_GOLD);
     shape_vectors.push_back(m);
 
     // Mesh *m2 = new Mesh(filename2, LAMBERTIAN_SHADING, COLOR_GOLD);
