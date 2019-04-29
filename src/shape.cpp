@@ -36,7 +36,7 @@ double color_matrix[][3] = {
 
 // Camera scene related data members.
 // These members are common to all shapes.
-const unsigned PIXELS = 400;
+const unsigned PIXELS = 600;
 long Shape::x_len = PIXELS;
 long Shape::y_len = PIXELS;
 MatrixXd Shape::C_R_mat = MatrixXd::Zero(Shape::x_len, Shape::y_len);
@@ -146,7 +146,7 @@ void compute_scene() {
  
 
   // version 0
-  
+
   // hardcore openmp
   #pragma omp parallel for schedule(static)
   for (unsigned i = 0; i < Shape::x_len; i++)

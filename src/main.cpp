@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
     // The default stack limit is 8M; extend it to 16M just in case.
     extend_stack();
 
-    if (argc != 2)
+    if (argc != 3)
     {
         // std::cout << "Error: not enough input argument" << std::endl;
         printf("Error: not enough input argument");
@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
     num_thread = atoi(argv[1]);
     omp_set_num_threads(num_thread);
 
-    string filename("../data/cube.off");
+    string filename(argv[2]);
     // string filename2("../data/bunny.off");
 
 
