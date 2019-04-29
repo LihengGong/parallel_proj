@@ -215,7 +215,7 @@ public:
     // hardcore openmp
   // #pragma omp parallel for num_threads(8) schedule(static)
 
-  /*
+  
     for (unsigned int ind = 0; ind < tri_number; ind++) {
       Eigen::Vector3i cur_triangle_vertices = triangles_matrix.row(ind);
       Eigen::Vector3d vertice0 = vertices_matrix.row(cur_triangle_vertices(0));
@@ -245,7 +245,7 @@ public:
 
 // version 2
 
-///*
+/*
 // #pragma omp parallel
 // #pragma omp for schedule(static)
     for (size_t ind = 0; ind < tri_number; ind++)
