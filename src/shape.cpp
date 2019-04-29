@@ -44,7 +44,7 @@ MatrixXd Shape::C_G_mat = MatrixXd::Zero(Shape::x_len, Shape::y_len);
 MatrixXd Shape::C_B_mat = MatrixXd::Zero(Shape::x_len, Shape::y_len);
 MatrixXd Shape::BK_mat = MatrixXd::Ones(Shape::x_len, Shape::y_len);
 MatrixXd Shape::A_mat = MatrixXd::Ones(Shape::x_len, Shape::y_len);
-double Shape::closest_pixel_in_ray = std::numeric_limits<double>::infinity();
+
 Vector3d Shape::pixel_origin(-10.0, 10.0, 4.0);
 double Shape::scene_width = 20.0;
 double Shape::scene_height = 20.0;
@@ -120,8 +120,7 @@ Configuration compute_raycolor(const Ref<const Vector3d> point_vect,
     double pixel_value_new = 0.;
 
     if(cur_shading == BLINN_PHONG_SHADING) {
-      Eigen::Vector3d vector_l = shadow_direction.normalized();//(Shape::light_position - intersection).normalized();
-      // Eigen::Vector3d vector_v = (Shape::scene_ray_origin - intersection).normalized();
+      Eigen::Vector3d vector_l = shadow_direction.normalized();
       Eigen::Vector3d vector_v = (point_vect - intersection).normalized();
       Eigen::Vector3d vector_h = (vector_l + vector_v).normalized();
       pixel_value_new = unit_normal.dot(vector_h);
@@ -140,13 +139,7 @@ Configuration compute_raycolor(const Ref<const Vector3d> point_vect,
 const int PIC_NUM = 1;
 
 void compute_scene() {
-  // Shape::closest_pixel_in_ray = std::numeric_limits<double>::infinity();
   double displacement = Shape::scene_width / PIC_NUM;
-
-// version 2
- 
-
-  // version 0
 
   // hardcore openmp
   Shape::light_position << -4.0 + displacement, 10.0, 4.0;
@@ -159,27 +152,14 @@ void compute_scene() {
     if(threadid == 0 && i == 0){
       cout << "num of thread " << omp_get_num_threads() << endl;
     }
-    // if(threadid == 0 && i % (Shape::x_len / 100 != 0 ? Shape::x_len / 100: 1) == 0) {
-    //   cout << "percentage: " << ((double)i / Shape::x_len) * 100 << endl;
-    // }
-
-    // if (i % (Shape::x_len / 100 != 0 ? Shape::x_len / 100 : 1) == 0)
-    // {
-    //   cout << "percentage: " << ((double)i / Shape::x_len) * 100 << endl;
-    // }
-
 
     for (unsigned j = 0; j < Shape::y_len; j++)
     {
       bool is_shading = false;
-      // Shape::generate_camera_rays(i, j);
       Eigen::Vector3d scene_ray_origin = Shape::pixel_origin +
               double(i) * Shape::x_displacement +
               double(j) * Shape::y_displacement;
 
-      
-      // Configuration config = compute_raycolor(Shape::scene_ray_origin,
-      //                                         Shape::scene_ray_direction, 0);
       Configuration config = compute_raycolor(scene_ray_origin,
                                               Shape::orthview_direction, 0);
 
