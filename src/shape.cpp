@@ -50,7 +50,7 @@ double Shape::scene_width = 20.0;
 double Shape::scene_height = 20.0;
 double Shape::camera_z_axis = 8.0;
 bool** Shape::pixel_is_shading_bitmap = new bool*[Shape::x_len];
-Vector3d Shape::scene_ray_origin(0.0, 4.0, 8.0);
+Vector3d Shape::scene_ray_origin(4.0, 4.0, 8.0);
 Vector3d Shape::scene_ray_direction(0., 0., -1.0);
 Vector3d Shape::orthview_direction(0., 0., -1.0);
 Vector3d Shape::persview_origin(0., 0., 6.0);
@@ -121,7 +121,8 @@ Configuration compute_raycolor(const Ref<const Vector3d> point_vect,
 
     if(cur_shading == BLINN_PHONG_SHADING) {
       Eigen::Vector3d vector_l = shadow_direction.normalized();//(Shape::light_position - intersection).normalized();
-      Eigen::Vector3d vector_v = (Shape::scene_ray_origin - intersection).normalized();
+      // Eigen::Vector3d vector_v = (Shape::scene_ray_origin - intersection).normalized();
+      Eigen::Vector3d vector_v = (point_vect - intersection).normalized();
       Eigen::Vector3d vector_h = (vector_l + vector_v).normalized();
       pixel_value_new = unit_normal.dot(vector_h);
       pixel_value_new = std::max(double(0.), pixel_value_new);
@@ -139,7 +140,7 @@ Configuration compute_raycolor(const Ref<const Vector3d> point_vect,
 const int PIC_NUM = 1;
 
 void compute_scene() {
-  Shape::closest_pixel_in_ray = std::numeric_limits<double>::infinity();
+  // Shape::closest_pixel_in_ray = std::numeric_limits<double>::infinity();
   double displacement = Shape::scene_width / PIC_NUM;
 
 // version 2
@@ -148,6 +149,8 @@ void compute_scene() {
   // version 0
 
   // hardcore openmp
+  Shape::light_position << -4.0 + displacement, 10.0, 4.0;
+
   #pragma omp parallel for schedule(static)
   for (unsigned i = 0; i < Shape::x_len; i++)
   {
@@ -165,14 +168,20 @@ void compute_scene() {
     //   cout << "percentage: " << ((double)i / Shape::x_len) * 100 << endl;
     // }
 
+
     for (unsigned j = 0; j < Shape::y_len; j++)
     {
       bool is_shading = false;
-      Shape::generate_camera_rays(i, j);
+      // Shape::generate_camera_rays(i, j);
+      Eigen::Vector3d scene_ray_origin = Shape::pixel_origin +
+              double(i) * Shape::x_displacement +
+              double(j) * Shape::y_displacement;
 
-      Shape::light_position << -4.0 + displacement, 10.0, 4.0;
-      Configuration config = compute_raycolor(Shape::scene_ray_origin,
-                                              Shape::scene_ray_direction, 0);
+      
+      // Configuration config = compute_raycolor(Shape::scene_ray_origin,
+      //                                         Shape::scene_ray_direction, 0);
+      Configuration config = compute_raycolor(scene_ray_origin,
+                                              Shape::orthview_direction, 0);
 
       ///// This code is ugly. I hate it.
       switch (config.color_enum)

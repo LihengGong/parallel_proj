@@ -203,19 +203,19 @@ public:
            double& solution_t,
            Eigen::Ref<Eigen::Vector3d> unit_norm) override {
 
-    // Eigen::Vector3d intersection(0., 0., 0.);
+    Eigen::Vector3d intersection(0., 0., 0.);
     bool is_intersect= false;
     bool is_shading = false;
     double temp_solution = std::numeric_limits<double>::infinity();
     int final_index = -1;
 
-    p_vec = point_vec;
-    dir = direction;
+    // p_vec = point_vec;
+    // dir = direction;
 
     // hardcore openmp
   // #pragma omp parallel for num_threads(8) schedule(static)
 
-  /*
+  
     for (unsigned int ind = 0; ind < tri_number; ind++) {
       Eigen::Vector3i cur_triangle_vertices = triangles_matrix.row(ind);
       Eigen::Vector3d vertice0 = vertices_matrix.row(cur_triangle_vertices(0));
@@ -245,7 +245,7 @@ public:
 
 // version 2
 
-///*
+/*
 // #pragma omp parallel
 // #pragma omp for schedule(static)
     for (size_t ind = 0; ind < tri_number; ind++)
@@ -259,8 +259,8 @@ public:
       double cur_solution = std::numeric_limits<double>::infinity();
       Eigen::Vector3d intersection(0., 0., 0.);
 
-      bool is_intersect = MolerTrumbore(p_vec,
-                                        dir,
+      bool is_intersect = MolerTrumbore(point_vec,
+                                        direction,
                                         vertice0, vertice1, vertice2,
                                         intersection, cur_solution);
       is_intersection_arry[ind] = is_intersect;
