@@ -53,8 +53,9 @@ if (TBB_LIB)
   SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${TBB_LINK_FLAGS}")
 endif()
 
-include_directories("/usr/local/include" "/usr/local/opt/llvm/include")
-
+if(APPLE)
+  include_directories("/usr/local/include" "/usr/local/opt/llvm/include")
+endif()
 
 find_package(OpenMP)
 if (OPENMP_FOUND)
@@ -64,7 +65,9 @@ if (OPENMP_FOUND)
 endif()
 
 if (OPENMP_FOUND)
-    include_directories("${OPENMP_INCLUDES}")
+    if(APPLE)
+      include_directories("${OPENMP_INCLUDES}")
+    endif()
     link_directories("${OPENMP_LIBRARIES}")
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
@@ -80,6 +83,10 @@ file(GLOB SOURCES
 )
 
 add_executable(${PROJECT_NAME}_bin ${SOURCES})
-link_directories("/usr/local/lib" "/usr/local/opt/llvm/lib")
+
+if(APPLE)
+  link_directories("/usr/local/lib" "/usr/local/opt/llvm/lib")
+endif()
+
 target_link_libraries(${PROJECT_NAME}_bin "${TBB_LIB}")
 
