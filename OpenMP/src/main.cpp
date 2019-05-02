@@ -12,7 +12,6 @@
 #include "stb_image_write.h"
 #include "utils.h"
 #include "shape.h"
-//#include <tbb/task_scheduler_init.h>
 
 // Shortcut to avoid Eigen:: and std:: everywhere, DO NOT USE IN .h
 using namespace std;
@@ -46,13 +45,11 @@ void extend_stack() {
 
 int main(int argc, char *argv[])
 {
-    // clock_t tStart = clock();
     // The default stack limit is 8M; extend it to 16M just in case.
     extend_stack();
 
     if (argc != 3)
     {
-        // std::cout << "Error: not enough input argument" << std::endl;
         printf("Error: not enough input argument");
         exit(1);
     }
@@ -61,15 +58,10 @@ int main(int argc, char *argv[])
     omp_set_num_threads(num_thread);
 
     string filename(argv[2]);
-    // string filename2("../data/bunny.off");
-
-
 
     Mesh *m = new Mesh(filename, LAMBERTIAN_SHADING, COLOR_GOLD);
     shape_vectors.push_back(m);
 
-    // Mesh *m2 = new Mesh(filename2, LAMBERTIAN_SHADING, COLOR_GOLD);
-    // shape_vectors.push_back(m2);
 
     compute_scene();
 
@@ -77,10 +69,6 @@ int main(int argc, char *argv[])
               it != shape_vectors.end(); ++it) {
       delete *it;
     }
-
-    // cout << "program execution time: "
-    //      << ((double)(clock() - tStart)/CLOCKS_PER_SEC)
-    //      << "s."<< endl;
 
     return 0;
 }
