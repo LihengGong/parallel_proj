@@ -7,7 +7,11 @@
 
 #include <vector>
 
+#if __APPLE__
 #include </usr/local/include/omp.h>
+#else
+#include <omp.h>
+#endif
 
 enum Shading{
     LAMBERTIAN_SHADING,
