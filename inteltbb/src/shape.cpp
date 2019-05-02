@@ -17,10 +17,13 @@
 #include "utils.h"
 
 #ifdef INTEL_TBB
+#if __APPLE__
 #include </usr/local/include/tbb/parallel_for.h>
 #include </usr/local/include/tbb/blocked_range.h>
-// #include <tbb/parallel_for.h>
-// #include <tbb/blocked_range.h>
+#else
+#include <tbb/parallel_for.h>
+#include <tbb/blocked_range.h>
+#endif
 #endif
 
 using namespace std;
@@ -149,13 +152,10 @@ const int PIC_NUM = 1;
 void compute_scene() {
   double displacement = Shape::scene_width / PIC_NUM;
 
-  // hardcore openmp
   Shape::light_position << -4.0 + displacement, 10.0, 4.0;
 
-  // #pragma omp parallel for schedule(static)
 #ifdef INTEL_TBB
   struct ParallelCompute {
-    // int i;
     void operator() (const tbb::blocked_range<int>& range) const {
       for (int i = range.begin(); i != range.end(); ++i) {
         for (unsigned j = 0; j < Shape::y_len; j++) {
@@ -200,72 +200,12 @@ void compute_scene() {
     }
     }
   };
-  // ParallelCompute pcpt;
 #endif
 
   
-// #ifdef INTEL_TBB
+
   ParallelCompute pcpt;
   parallel_for(tbb::blocked_range<int>(0, Shape::x_len), pcpt);
-// #else
-  // #pragma omp parallel for schedule(static)
-  // for (unsigned i = 0; i < Shape::x_len; i++)
-  {
-    /*** omp id ****/
-    // int threadid = omp_get_thread_num();
-    // if(threadid == 0 && i == 0){
-    //   cout << "num of thread " << omp_get_num_threads() << endl;
-    // }
-
-#ifdef INTEL_TBB
-    // pcpt.i = i;
-    // parallel_for(tbb::blocked_range<int>(0, Shape::y_len), pcpt);
-#else
-    // #pragma omp parallel for schedule(static)
-    for (unsigned j = 0; j < Shape::y_len; j++)
-    {
-      bool is_shading = false;
-      Eigen::Vector3d scene_ray_origin = Shape::pixel_origin +
-              double(i) * Shape::x_displacement +
-              double(j) * Shape::y_displacement;
-
-      Configuration config = compute_raycolor(scene_ray_origin,
-                                              Shape::orthview_direction, 0);
-
-      ///// This code is ugly. I hate it.
-      switch (config.color_enum)
-      {
-      case COLOR_RED:
-        Shape::C_R_mat(i, j) = config.col_value;
-        break;
-      case COLOR_GREEN:
-        Shape::C_G_mat(i, j) = config.col_value;
-        break;
-      case COLOR_BLUE:
-        Shape::C_B_mat(i, j) = config.col_value;
-        break;
-      case COLOR_GOLD:
-        Shape::C_R_mat(i, j) = config.col_value;
-        Shape::C_G_mat(i, j) = config.col_value * 0.8431;
-        //Shape::C_B_mat(i, j) = config.col_value;
-        break;
-      case COLOR_NYU:
-        Shape::C_R_mat(i, j) = config.col_value * (87.0 / 255.0);
-        Shape::C_G_mat(i, j) = config.col_value * (6.0 / 255.0);
-        Shape::C_B_mat(i, j) = config.col_value * (140.0 / 255.0);
-        break;
-      case COLOR_GREY:
-        Shape::C_R_mat(i, j) = config.col_value;
-        Shape::C_G_mat(i, j) = config.col_value;
-        Shape::C_B_mat(i, j) = config.col_value;
-        break;
-      default:
-        break;
-      }
-    }
-#endif
-    
-  }
 
   std::string filename = "filename" + std::to_string(0) + ".png";
   write_matrix_to_png(Shape::C_R_mat, Shape::C_G_mat,

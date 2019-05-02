@@ -1,7 +1,7 @@
 #!/bin/bash
 
 pwd
-cd openmp
+cd inteltbb
 pwd
 
 rm -rf build
@@ -22,17 +22,10 @@ make -j8
 
 sleep 1
 
-echo
-echo
-echo ">>>>>>First run in single thread as the base line...<<<<<<"
-echo
-echo
-
-time ./parallel_proj_bin 1 ../data/bunny.off
 
 echo
 echo
-echo ">>>>>>Now run in 8 threads...<<<<<<"
+echo ">>>>>>Now use TBB to parallelize...<<<<<<"
 echo
 echo
 
