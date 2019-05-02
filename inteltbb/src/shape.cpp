@@ -202,8 +202,6 @@ void compute_scene() {
   };
 #endif
 
-  
-
   ParallelCompute pcpt;
   parallel_for(tbb::blocked_range<int>(0, Shape::x_len), pcpt);
 

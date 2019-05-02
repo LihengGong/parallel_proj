@@ -7,9 +7,6 @@
 
 #include <vector>
 
-#include </usr/local/include/omp.h>
-
-
 enum Shading{
     LAMBERTIAN_SHADING,
     BLINN_PHONG_SHADING,

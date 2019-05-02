@@ -57,10 +57,7 @@ int main(int argc, char *argv[])
     }
 
     num_thread = atoi(argv[1]);
-
     string filename(argv[2]);
-
-
 
     Mesh *m = new Mesh(filename, LAMBERTIAN_SHADING, COLOR_GOLD);
     shape_vectors.push_back(m);
